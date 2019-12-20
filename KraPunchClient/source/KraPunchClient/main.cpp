@@ -1,8 +1,7 @@
-#include <SFML/Network.hpp>
+#include "KraPunchClient/StunClient.h"
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include "KraPunch/StunServer.h"
 
 #if _WIN32
 #include<stdio.h>
@@ -39,38 +38,35 @@ int kbhit(void)
 }
 #endif
 
-
-class ForceExitScopeTest {
-public:
-	ForceExitScopeTest() 
-	{
-		std::cout << "created" << std::endl;
-	}
-
-	~ForceExitScopeTest()
-	{
-		std::cout << "destroyed" << std::endl;
-	}
-};
-
 int main()
 {
-	using namespace std::chrono;
-
-	ForceExitScopeTest o;
-	kra::stun::StunServer Stun;
-	if (!Stun.Init())
-	{
-		std::cout << "Failed to initialize stun server" << std::endl;
-		return 0;
-	}
+	kra::stun::StunClient Client;
 	
-	// Run until any key is pressed
+	std::cout << "Enter 0 for host and 1 for join" << std::endl;
+	int H;
+	std::cin >> H;
+
+	if (H == 0)
+	{
+		// Host
+		Client.StartHost();
+		std::cout << "Host code: " << Client.GetSessionCode() << std::endl;
+	}
+	else if (H == 1)
+	{
+		// Join
+		std::cout << "Enter the session code" << std::endl;
+		uint32_t Code;
+		std::cin >> Code;
+
+		Client.StartJoin(Code);
+	}
+
 	while (!kbhit())
 	{
-		Stun.Update();
+		Client.Update();
 
-		seconds sec(1);
+		std::chrono::milliseconds sec(10);
 		std::this_thread::sleep_for(sec);
 	}
 

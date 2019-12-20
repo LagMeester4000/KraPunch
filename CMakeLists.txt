@@ -34,3 +34,6 @@ add_subdirectory(deps)
 # app projects
 add_subdirectory(KraPunch)
 set_property(TARGET KraPunch PROPERTY FOLDER application)
+
+add_subdirectory(KraPunchClient)
+set_property(TARGET KraPunchClient PROPERTY FOLDER application)
