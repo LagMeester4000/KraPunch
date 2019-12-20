@@ -26,8 +26,8 @@ int main()
 	for (size_t i = 0; i < 20; ++i)
 	{
 
-
-		std::this_thread::sleep_for(1s);
+		seconds sec(1);
+		std::this_thread::sleep_for(sec);
 	}
 
 	return 1;
