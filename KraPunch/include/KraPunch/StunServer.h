@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <stdint.h>
+#include <chrono>
 
 namespace kra {
 	namespace stun {
@@ -15,6 +16,7 @@ namespace kra {
 			Address InitialAddress;
 			Address OtherAddress;
 			bool ClientConnected = false;
+			std::chrono::time_point<std::chrono::high_resolution_clock> LastTime;
 		};
 
 		class StunServer {
@@ -56,6 +58,8 @@ namespace kra {
 			void OnPackJoin(Address);
 			void OnPackKeepAlive(Address);
 			void OnPackDestroy(Address);
+
+			void Cleanup();
 
 		private: // Net
 			sf::UdpSocket Sock;

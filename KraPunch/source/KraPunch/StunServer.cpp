@@ -2,6 +2,7 @@
 #include <iostream>
 #include <random>
 #include <ctime>
+#include <vector>
 
 unsigned short ServerPort = 31417;
 
@@ -42,6 +43,9 @@ void kra::stun::StunServer::Update()
 			break;
 		}
 	}
+
+	// Clean old packet
+	Cleanup();
 }
 
 void kra::stun::StunServer::OnPackHost(Address Add)
@@ -75,6 +79,7 @@ void kra::stun::StunServer::OnPackHost(Address Add)
 		// Setup new element
 		StunElement El;
 		El.InitialAddress = Add;
+		El.LastTime = std::chrono::high_resolution_clock::now();
 		Sessions[NewCode] = El;
 		IpToSession[IpString] = NewCode;
 
@@ -163,6 +168,8 @@ void kra::stun::StunServer::OnPackKeepAlive(Address Add)
 	auto Find = Sessions.find(SessionCode);
 	if (Find != Sessions.end())
 	{
+		Find->second.LastTime = std::chrono::high_resolution_clock::now();
+
 		// Check if someone is already connected
 		if (Find->second.ClientConnected)
 		{
@@ -187,4 +194,31 @@ void kra::stun::StunServer::OnPackKeepAlive(Address Add)
 
 void kra::stun::StunServer::OnPackDestroy(Address Add)
 {
+}
+
+void kra::stun::StunServer::Cleanup()
+{
+	struct Ent {
+		std::string s;
+		uint32_t c;
+	};
+	std::vector<Ent> ToDestroy;
+
+	// Find inactive sessions
+	for (auto& It : IpToSession)
+	{
+		auto& Other = Sessions[It.second]; 
+		if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - Other.LastTime).count() > 10)
+		{
+			ToDestroy.push_back(Ent{ It.first, It.second });
+		}
+	}
+
+	// Destroy inactive sessions
+	for (auto& It : ToDestroy)
+	{
+		std::cout << "Erased client with session ID: " << It.c << std::endl;
+		IpToSession.erase(It.s);
+		Sessions.erase(It.c);
+	}
 }

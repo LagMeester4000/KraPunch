@@ -13,6 +13,7 @@ void SmallSleep()
 }
 
 kra::stun::StunClient::StunClient()
+	: SessionCode(0), Type(ClientType::None), State(ConnectionState::Disconnected)
 {
 }
 
@@ -67,7 +68,7 @@ void kra::stun::StunClient::StartJoin(uint32_t SessionCodee)
 	State = ConnectionState::Connecting;
 	SmallSleep();
 
-	while (SessionCode == 0)
+	while (!HasOtherAddress())
 	{
 		sf::IpAddress SIP;
 		unsigned short SPort;
@@ -175,12 +176,12 @@ void kra::stun::StunClient::Update()
 
 bool kra::stun::StunClient::HasOtherAddress() const
 {
-	return false;
+	return State == ConnectionState::Joining || State == ConnectionState::Connected;
 }
 
 uint32_t kra::stun::StunClient::GetSessionCode() const
 {
-	return uint32_t();
+	return SessionCode;
 }
 
 void kra::stun::StunClient::PrintOtherAddress()
